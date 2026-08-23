@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Dark mode default */
+  html.dark body {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  /* Light mode default */
+  html:not(.dark) body {
+    background-color: #f7f9fb;
+    color: #1f2328;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+}
+
+/* =========================================================
+   DISABLE FONT LIGATURES
+   Ensure <= , >= , != , == , => appear as distinct characters
+   ========================================================= */
+*,
+code,
+kbd,
+samp,
+pre,
+input,
+textarea,
+.font-mono {
+  font-variant-ligatures: none !important;
+  font-feature-settings: "liga" 0, "calt" 0, "dlig" 0 !important;
+}
+
+/* =========================================================
+   TEXT SELECTION COLORS (Crystal clear in both dark & light)
+   ========================================================= */
+html.dark ::selection {
+  background-color: #264f78 !important;
+  color: #ffffff !important;
+}
+
+html:not(.dark) ::selection {
+  background-color: #add6ff !important;
+  color: #000000 !important;
+}
+
+/* Scrollbars */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #3c3c3c;
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4e4e4e;
+}
+
+html:not(.dark) ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+html:not(.dark) ::-webkit-scrollbar-track {
+  background: #f0f2f5;
+}
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #c1c5cc;
+  border-radius: 4px;
+}
+html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: #a0a5ad;
+}
+
+/* =========================================================
+   Syntax Highlighting (Dark Theme - IDLE / VS Code Dark)
+   ========================================================= */
+.dark .token.comment,
+.dark .token.prolog,
+.dark .token.doctype,
+.dark .token.cdata {
+  color: #6a9955;
+  font-style: italic;
+}
+
+.dark .token.punctuation {
+  color: #d4d4d4;
+}
+
+.dark .token.property,
+.dark .token.tag,
+.dark .token.constant,
+.dark .token.symbol,
+.dark .token.deleted {
+  color: #4ec9b0;
+}
+
+.dark .token.boolean,
+.dark .token.number {
+  color: #b5cea8;
+}
+
+.dark .token.selector,
+.dark .token.attr-name,
+.dark .token.string,
+.dark .token.char,
+.dark .token.builtin,
+.dark .token.inserted {
+  color: #ce9178;
+}
+
+.dark .token.operator,
+.dark .token.entity,
+.dark .token.url {
+  color: #d4d4d4;
+}
+
+.dark .token.atrule,
+.dark .token.attr-value,
+.dark .token.keyword {
+  color: #c586c0;
+  font-weight: 600;
+}
+
+.dark .token.function,
+.dark .token.class-name {
+  color: #dcdcaa;
+}
+
+.dark .token.regex,
+.dark .token.important,
+.dark .token.variable {
+  color: #9cdcfe;
+}
+
+/* =========================================================
+   Syntax Highlighting (Light Theme - Classic IDLE Clean Python)
+   ========================================================= */
+html:not(.dark) .token.comment,
+html:not(.dark) .token.prolog,
+html:not(.dark) .token.doctype,
+html:not(.dark) .token.cdata {
+  color: #dd0000;
+  font-style: italic;
+}
+
+html:not(.dark) .token.punctuation {
+  color: #24292f;
+}
+
+html:not(.dark) .token.property,
+html:not(.dark) .token.tag,
+html:not(.dark) .token.constant,
+html:not(.dark) .token.symbol,
+html:not(.dark) .token.deleted {
+  color: #0550ae;
+}
+
+html:not(.dark) .token.boolean,
+html:not(.dark) .token.number {
+  color: #0969da;
+}
+
+html:not(.dark) .token.selector,
+html:not(.dark) .token.attr-name,
+html:not(.dark) .token.string,
+html:not(.dark) .token.char,
+html:not(.dark) .token.builtin,
+html:not(.dark) .token.inserted {
+  color: #00aa00;
+}
+
+html:not(.dark) .token.operator,
+html:not(.dark) .token.entity,
+html:not(.dark) .token.url {
+  color: #24292f;
+}
+
+html:not(.dark) .token.atrule,
+html:not(.dark) .token.attr-value,
+html:not(.dark) .token.keyword {
+  color: #ff7700;
+  font-weight: 600;
+}
+
+html:not(.dark) .token.function,
+html:not(.dark) .token.class-name {
+  color: #0000ff;
+}
+
+html:not(.dark) .token.regex,
+html:not(.dark) .token.important,
+html:not(.dark) .token.variable {
+  color: #24292f;
+}
