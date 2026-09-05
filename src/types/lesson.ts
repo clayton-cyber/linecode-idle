@@ -28,6 +28,41 @@ export interface UserStats {
   endTime?: number;
 }
 
+export type GameMode = 'type' | 'tokens';
+
+export type TokenType = 
+  | 'keyword'
+  | 'identifier'
+  | 'operator'
+  | 'string'
+  | 'number'
+  | 'punctuation'
+  | 'comment'
+  | 'whitespace';
+
+export type PuzzleDifficulty = 'easy' | 'medium' | 'hard';
+
+export interface TokenItem {
+  id: string;
+  text: string;
+  type: TokenType;
+  isBlank: boolean;
+  slotIndex?: number;
+}
+
+export interface PuzzleLineData {
+  leadingIndent: string;
+  tokens: TokenItem[];
+  blankSlotsCount: number;
+  bankTokens: TokenItem[];
+}
+
+export interface PuzzleStats extends UserStats {
+  score: number;
+  comboMultiplier: number;
+  hintsUsed: number;
+}
+
 export interface AppSettings {
   autoAdvanceOnSuccess: boolean;
   strictIndentation: boolean;
@@ -36,3 +71,5 @@ export interface AppSettings {
   theme: 'dark' | 'light';
   peekNextLines: boolean;
 }
+
+

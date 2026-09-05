@@ -6,7 +6,8 @@ import {
   Zap, 
   CheckCircle2
 } from 'lucide-react';
-import { Lesson, AppSettings, UserStats } from '../types/lesson';
+import { Lesson, AppSettings, UserStats, GameMode } from '../types/lesson';
+import { Puzzle, Keyboard } from 'lucide-react';
 
 interface IDLEStatusBarProps {
   lesson: Lesson;
@@ -16,6 +17,7 @@ interface IDLEStatusBarProps {
   settings: AppSettings;
   onToggleTheme: () => void;
   onToggleSound: () => void;
+  gameMode?: GameMode;
 }
 
 export const IDLEStatusBar: React.FC<IDLEStatusBarProps> = ({
@@ -25,6 +27,7 @@ export const IDLEStatusBar: React.FC<IDLEStatusBarProps> = ({
   stats,
   settings,
   onToggleTheme,
+  gameMode = 'type',
 }) => {
   const isDark = settings.theme === 'dark';
   const total = lesson.lines.length;
@@ -48,6 +51,20 @@ export const IDLEStatusBar: React.FC<IDLEStatusBarProps> = ({
 
         <span className="opacity-75 hidden sm:inline">
           Ln {currentIndex + 1}, Col 1 (Total {total}L)
+        </span>
+
+        <span className="flex items-center gap-1 font-semibold">
+          {gameMode === 'tokens' ? (
+            <span className="flex items-center gap-1 text-purple-600 dark:text-purple-400">
+              <Puzzle className="w-3 h-3" />
+              <span>Token Drop Mode</span>
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+              <Keyboard className="w-3 h-3" />
+              <span>Type Drill Mode</span>
+            </span>
+          )}
         </span>
 
         <span className="flex items-center gap-1">

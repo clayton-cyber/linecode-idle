@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { IDLEMenuBar } from './components/IDLEMenuBar';
 import { IDLEStatusBar } from './components/IDLEStatusBar';
 import { PracticeView } from './components/PracticeView';
+import { TokenPuzzleView } from './components/TokenPuzzleView';
 import { LessonEditorModal } from './components/LessonEditorModal';
 import { defaultLessons } from './data/defaultLessons';
-import { Lesson, AppSettings, UserStats } from './types/lesson';
+import { Lesson, AppSettings, UserStats, GameMode } from './types/lesson';
 import { 
   loadSettings, 
   saveSettings, 
@@ -20,6 +21,8 @@ export function App() {
   const [currentLesson, setCurrentLesson] = useState<Lesson>(defaultLessons[0]);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'split' | 'focus'>('split');
+  const [gameMode, setGameMode] = useState<GameMode>('tokens'); // Default to exciting new Token Drop mode or type
+
 
   // Line navigation and stats state
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -125,24 +128,41 @@ export function App() {
         onToggleSound={handleToggleSound}
         viewMode={viewMode}
         onToggleViewMode={() => setViewMode(viewMode === 'split' ? 'focus' : 'split')}
+        gameMode={gameMode}
+        onSelectGameMode={setGameMode}
       />
 
       {/* 2. Main IDLE Practice Shell Workspace */}
       <main className="flex-1 overflow-hidden flex flex-col">
-        <PracticeView
-          key={currentLesson.id}
-          lesson={currentLesson}
-          settings={settings}
-          onNextLesson={handleNextLesson}
-          currentIndex={currentIndex}
-          onJumpToLine={setCurrentIndex}
-          completedIndices={completedIndices}
-          setCompletedIndices={setCompletedIndices}
-          stats={stats}
-          setStats={setStats}
-          viewMode={viewMode}
-          onToggleViewMode={() => setViewMode(viewMode === 'split' ? 'focus' : 'split')}
-        />
+        {gameMode === 'tokens' ? (
+          <TokenPuzzleView
+            key={`tokens-${currentLesson.id}`}
+            lesson={currentLesson}
+            settings={settings}
+            onNextLesson={handleNextLesson}
+            currentIndex={currentIndex}
+            onJumpToLine={setCurrentIndex}
+            completedIndices={completedIndices}
+            setCompletedIndices={setCompletedIndices}
+            viewMode={viewMode}
+            onToggleViewMode={() => setViewMode(viewMode === 'split' ? 'focus' : 'split')}
+          />
+        ) : (
+          <PracticeView
+            key={`type-${currentLesson.id}`}
+            lesson={currentLesson}
+            settings={settings}
+            onNextLesson={handleNextLesson}
+            currentIndex={currentIndex}
+            onJumpToLine={setCurrentIndex}
+            completedIndices={completedIndices}
+            setCompletedIndices={setCompletedIndices}
+            stats={stats}
+            setStats={setStats}
+            viewMode={viewMode}
+            onToggleViewMode={() => setViewMode(viewMode === 'split' ? 'focus' : 'split')}
+          />
+        )}
       </main>
 
       {/* 3. IDLE Status Bar */}
@@ -154,6 +174,7 @@ export function App() {
         settings={settings}
         onToggleTheme={handleToggleTheme}
         onToggleSound={handleToggleSound}
+        gameMode={gameMode}
       />
 
       {/* 4. Paste Custom Code Modal */}

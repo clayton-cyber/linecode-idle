@@ -262,7 +262,7 @@ export const IDLEPromptInput: React.FC<IDLEPromptInputProps> = ({
         </div>
 
         {/* Diff Diagnostics */}
-        {input.length > 0 && !isMatch && validation.firstDiffIndex !== -1 && (
+        {input.length > 0 && !isMatch && validation.firstDiffIndex !== -1 && validation.firstDiffIndex < validation.userCode.length && (
           <div className="mt-2 flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-mono animate-slideUp">
             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
             <span>

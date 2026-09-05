@@ -319,8 +319,9 @@ export function validateCodeLine(
   expectedCode: string;
   userCode: string;
 } {
-  const user = strictIndentation ? userInput : userInput.trim();
-  const target = strictIndentation ? targetCode : targetCode.trim();
+  // If strictIndentation is false, remove only leading indentation (do NOT trim trailing space while typing)
+  const user = strictIndentation ? userInput : userInput.replace(/^\s+/, '');
+  const target = strictIndentation ? targetCode : targetCode.replace(/^\s+/, '');
 
   let charMatchCount = 0;
   let firstDiffIndex = -1;
@@ -335,12 +336,13 @@ export function validateCodeLine(
     }
   }
 
-  if (firstDiffIndex === -1 && user.length !== target.length) {
+  // If user typed extra characters beyond target length
+  if (firstDiffIndex === -1 && user.length > target.length) {
     firstDiffIndex = minLen;
   }
 
-  // Allow match if trimmed versions match or exact matches
-  const isMatch = user === target || (!strictIndentation && userInput.trim() === targetCode.trim());
+  // Allow match if full match or completed line trimmed match
+  const isMatch = user === target || (!strictIndentation && user.trim() === target.trim() && user.length >= target.trim().length);
 
   return {
     isMatch,

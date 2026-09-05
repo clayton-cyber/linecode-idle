@@ -13,9 +13,10 @@ import {
   FileCode,
   Sparkles
 } from 'lucide-react';
-import { Lesson, AppSettings } from '../types/lesson';
+import { Lesson, AppSettings, GameMode } from '../types/lesson';
 import { getLanguageIcon, getFileExtension, detectLanguageFromFilename } from '../utils/fileIcons';
 import { parseCodeInput } from '../utils/parser';
+import { Puzzle, Keyboard } from 'lucide-react';
 
 interface IDLEMenuBarProps {
   currentLesson: Lesson;
@@ -30,6 +31,8 @@ interface IDLEMenuBarProps {
   onToggleSound: () => void;
   viewMode: 'split' | 'focus';
   onToggleViewMode: () => void;
+  gameMode: GameMode;
+  onSelectGameMode: (mode: GameMode) => void;
 }
 
 export const IDLEMenuBar: React.FC<IDLEMenuBarProps> = ({
@@ -45,6 +48,8 @@ export const IDLEMenuBar: React.FC<IDLEMenuBarProps> = ({
   onToggleSound,
   viewMode,
   onToggleViewMode,
+  gameMode,
+  onSelectGameMode,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -249,6 +254,36 @@ export const IDLEMenuBar: React.FC<IDLEMenuBarProps> = ({
                 </div>
               </>
             )}
+          </div>
+
+          {/* Game Mode Switcher: Type Drill vs Token Drop */}
+          <div className={`p-0.5 rounded-lg border flex items-center font-mono text-xs select-none ${
+            isDark ? 'bg-[#1e1e1e] border-[#3c3c3c]' : 'bg-[#f0f3f6] border-[#d0d7de]'
+          }`}>
+            <button
+              onClick={() => onSelectGameMode('type')}
+              className={`px-2.5 py-1 rounded-md flex items-center gap-1.5 transition font-semibold ${
+                gameMode === 'type'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : isDark ? 'text-[#858585] hover:text-white' : 'text-[#57606a] hover:text-[#24292f]'
+              }`}
+              title="Keyboard Typing Drill Practice Mode"
+            >
+              <Keyboard className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Type Drill</span>
+            </button>
+            <button
+              onClick={() => onSelectGameMode('tokens')}
+              className={`px-2.5 py-1 rounded-md flex items-center gap-1.5 transition font-semibold ${
+                gameMode === 'tokens'
+                  ? 'bg-purple-600 text-white shadow-xs'
+                  : isDark ? 'text-[#858585] hover:text-white' : 'text-[#57606a] hover:text-[#24292f]'
+              }`}
+              title="Token Drop: Drag & Drop Fill-in-the-Blanks Challenge"
+            >
+              <Puzzle className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Token Drop</span>
+            </button>
           </div>
 
           {/* AI LLM Prompt Template Button */}
