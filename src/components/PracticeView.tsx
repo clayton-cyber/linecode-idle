@@ -24,6 +24,11 @@ interface PracticeViewProps {
   setCompletedIndices: React.Dispatch<React.SetStateAction<Set<number>>>;
   stats: UserStats;
   setStats: React.Dispatch<React.SetStateAction<UserStats>>;
+  drillLineIndices: Set<number> | null;
+  hintedIndices: Set<number>;
+  setHintedIndices: React.Dispatch<React.SetStateAction<Set<number>>>;
+  onToggleLineSelection: (index: number) => void;
+  onSetDrillLineIndices: (indices: Set<number> | null) => void;
   viewMode: 'split' | 'focus';
   onToggleViewMode: () => void;
 }
@@ -38,6 +43,11 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   setCompletedIndices,
   stats,
   setStats,
+  drillLineIndices,
+  hintedIndices,
+  setHintedIndices,
+  onToggleLineSelection,
+  onSetDrillLineIndices,
   viewMode,
   onToggleViewMode,
 }) => {
@@ -59,17 +69,26 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
       return next;
     });
 
+    if (revealedSolution) {
+      setHintedIndices(prev => new Set(prev).add(currentIndex));
+    }
+
     setStats(prev => ({
       ...prev,
       completedLines: prev.completedLines + 1,
       revealedSolutions: revealedSolution ? prev.revealedSolutions + 1 : prev.revealedSolutions,
       streak: prev.streak + 1,
     }));
-  }, [currentIndex, settings.soundEffects, setCompletedIndices, setStats]);
+  }, [currentIndex, settings.soundEffects, setCompletedIndices, setHintedIndices, setStats]);
 
   const handleShowNext = useCallback(() => {
-    if (currentIndex < totalLines - 1) {
-      onJumpToLine(currentIndex + 1);
+    let nextIdx = currentIndex + 1;
+    if (drillLineIndices) {
+      while (nextIdx < totalLines && !drillLineIndices.has(nextIdx)) nextIdx++;
+    }
+
+    if (nextIdx < totalLines) {
+      onJumpToLine(nextIdx);
     } else {
       setStats(prev => ({
         ...prev,
@@ -84,7 +103,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
         lastPracticed: Date.now(),
       });
     }
-  }, [currentIndex, totalLines, lesson.id, stats.revealedSolutions, onJumpToLine, setStats]);
+  }, [currentIndex, totalLines, lesson.id, stats.revealedSolutions, drillLineIndices, onJumpToLine, setStats]);
 
   const handlePrev = () => {
     if (currentIndex > 0) {
@@ -93,8 +112,15 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   };
 
   const handleRestart = () => {
-    onJumpToLine(0);
+    let firstIdx = 0;
+    if (drillLineIndices) {
+      while (firstIdx < totalLines && !drillLineIndices.has(firstIdx)) firstIdx++;
+    }
+    if (firstIdx >= totalLines) firstIdx = 0;
+
+    onJumpToLine(firstIdx);
     setCompletedIndices(new Set());
+    setHintedIndices(new Set());
     setStats({
       completedLines: 0,
       totalAttempts: 0,
@@ -179,18 +205,6 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
         {/* Main Drill Section */}
         <div className={`${viewMode === 'split' ? 'lg:col-span-7' : 'w-full'} space-y-4`}>
           
-          {/* Step Docstring Analysis */}
-          <IDLEAnalysisDoc
-            currentLine={currentLine}
-            currentIndex={currentIndex}
-            totalLines={totalLines}
-            onPrev={handlePrev}
-            onNext={handleShowNext}
-            onReset={handleRestart}
-            isCompleted={completedIndices.has(currentIndex)}
-            settings={settings}
-          />
-
           {/* Interactive IDLE Prompt Input */}
           <IDLEPromptInput
             key={`input-${currentLine.id}-${currentIndex}`}
@@ -210,20 +224,34 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
             }}
           >
             <div className="text-[11px] font-mono font-bold uppercase tracking-wider opacity-70 mb-2 flex items-center justify-between">
-              <span>Line Navigator</span>
-              <span>{completedIndices.size}/{totalLines} lines completed</span>
+              <span>Line Navigator — {completedIndices.size}/{totalLines} lines</span>
+              <button
+                onClick={handleRestart}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] font-semibold transition ${
+                  isDark
+                    ? 'border-[#3c3c3c] hover:bg-[#333333] text-[#858585] hover:text-white'
+                    : 'border-[#d0d7de] hover:bg-[#f0f0f0] text-[#57606a]'
+                }`}
+                title="Restart the drill from the beginning"
+              >
+                ↺ Restart Drill
+              </button>
             </div>
             <div className="flex flex-wrap gap-1.5 font-mono">
               {lesson.lines.map((l, idx) => {
                 const isActive = idx === currentIndex;
                 const isDone = completedIndices.has(idx);
+                const isHinted = hintedIndices.has(idx);
+                const isSkipped = drillLineIndices && !drillLineIndices.has(idx);
 
                 return (
                   <button
                     key={l.id}
                     onClick={() => onJumpToLine(idx)}
                     className={`w-7 h-7 rounded text-xs font-bold flex items-center justify-center transition border ${
-                      isActive
+                      isSkipped
+                        ? 'opacity-30 bg-transparent border-dashed border-gray-400 text-gray-500 cursor-not-allowed'
+                        : isActive
                         ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
                         : isDone
                         ? isDark 
@@ -233,7 +261,8 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
                         ? 'bg-[#1e1e1e] hover:bg-[#333333] text-[#858585] border-[#3c3c3c]'
                         : 'bg-[#f6f8fa] hover:bg-[#eef2f6] text-[#57606a] border-[#d0d7de]'
                     }`}
-                    title={`Line ${l.lineNumber}: ${l.code.trim()}`}
+                    title={isSkipped ? `Line ${l.lineNumber} (Skipped)` : `Line ${l.lineNumber}: ${l.code.trim()}`}
+                    disabled={isSkipped || false}
                   >
                     {l.lineNumber}
                   </button>
@@ -253,6 +282,8 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
               completedIndices={completedIndices}
               onJumpToLine={onJumpToLine}
               settings={settings}
+              drillLineIndices={drillLineIndices}
+              onToggleLineSelection={onToggleLineSelection}
             />
           </div>
         )}
@@ -269,6 +300,21 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
         onClose={() => setIsCompletionModalOpen(false)}
         soundEnabled={settings.soundEffects}
         settings={settings}
+        hintedIndices={hintedIndices}
+        onRetakeHinted={() => {
+          onSetDrillLineIndices(new Set(hintedIndices));
+          onJumpToLine(Array.from(hintedIndices).sort((a,b)=>a-b)[0] || 0);
+          setCompletedIndices(new Set());
+          setHintedIndices(new Set());
+          setStats({
+            completedLines: 0,
+            totalAttempts: 0,
+            revealedSolutions: 0,
+            streak: 0,
+            startTime: Date.now(),
+          });
+          setIsCompletionModalOpen(false);
+        }}
       />
 
     </div>

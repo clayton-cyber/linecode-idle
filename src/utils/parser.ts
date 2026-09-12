@@ -42,6 +42,14 @@ function isCommentLine(line: string): boolean {
   );
 }
 
+function stripInlineComment(line: string): string {
+  const match = line.match(/^(.*?)(#|\/\/|--)\s*(.*)$/);
+  if (match) {
+    return match[1].replace(/\s+$/, '');
+  }
+  return line;
+}
+
 function categorizeCode(code: string): CodeLineItem['category'] {
   const trimmed = code.trim();
   if (/^(import|from|require|include|using|package)\b/.test(trimmed)) return 'import';
@@ -162,12 +170,13 @@ export function parseCodeInput(rawText: string, defaultTitle: string = 'Custom P
           category: categorizeCode(codePart),
         });
       } else {
+        const stripped = stripInlineComment(rawLine);
         items.push({
           id: `line-${items.length + 1}`,
           lineNumber: items.length + 1,
-          code: rawLine,
+          code: stripped,
           explanation: `Line ${items.length + 1} of implementation.`,
-          category: categorizeCode(rawLine),
+          category: categorizeCode(stripped),
         });
       }
     }
@@ -203,12 +212,13 @@ export function parseCodeInput(rawText: string, defaultTitle: string = 'Custom P
           ? pendingComments.join('\n') 
           : `Step ${items.length + 1}: Add this code logic.`;
         
+        const stripped = stripInlineComment(rawLine);
         items.push({
           id: `line-${items.length + 1}`,
           lineNumber: items.length + 1,
-          code: rawLine,
+          code: stripped,
           explanation: explanation,
-          category: categorizeCode(rawLine),
+          category: categorizeCode(stripped),
         });
         pendingComments = [];
       }
@@ -225,12 +235,13 @@ export function parseCodeInput(rawText: string, defaultTitle: string = 'Custom P
 
     const commitItem = () => {
       if (currentCode !== null) {
+        const stripped = stripInlineComment(currentCode);
         items.push({
           id: `line-${items.length + 1}`,
           lineNumber: items.length + 1,
-          code: currentCode,
+          code: stripped,
           explanation: comments.length > 0 ? comments.join('\n') : `Step ${items.length + 1}: Line execution and purpose.`,
-          category: categorizeCode(currentCode),
+          category: categorizeCode(stripped),
         });
         currentCode = null;
         comments = [];
@@ -267,12 +278,15 @@ export function parseCodeInput(rawText: string, defaultTitle: string = 'Custom P
   const plainItems: CodeLineItem[] = [];
   for (const rawLine of rawLines) {
     if (!rawLine.trim()) continue;
+    if (isCommentLine(rawLine)) continue; // skip pure comment lines in plain code practice
+    
+    const stripped = stripInlineComment(rawLine);
     plainItems.push({
       id: `line-${plainItems.length + 1}`,
       lineNumber: plainItems.length + 1,
-      code: rawLine,
-      explanation: generateAutoExplanation(rawLine, plainItems.length + 1),
-      category: categorizeCode(rawLine),
+      code: stripped,
+      explanation: generateAutoExplanation(stripped, plainItems.length + 1),
+      category: categorizeCode(stripped),
     });
   }
 

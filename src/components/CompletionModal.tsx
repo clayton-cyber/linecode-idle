@@ -22,6 +22,8 @@ interface CompletionModalProps {
   onClose: () => void;
   soundEnabled: boolean;
   settings: AppSettings;
+  hintedIndices?: Set<number>;
+  onRetakeHinted?: () => void;
 }
 
 export const CompletionModal: React.FC<CompletionModalProps> = ({
@@ -33,6 +35,8 @@ export const CompletionModal: React.FC<CompletionModalProps> = ({
   onClose,
   soundEnabled,
   settings,
+  hintedIndices,
+  onRetakeHinted,
 }) => {
   const isDark = settings.theme === 'dark';
 
@@ -151,6 +155,20 @@ export const CompletionModal: React.FC<CompletionModalProps> = ({
             >
               <span>Next File</span>
               <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
+
+          {hintedIndices && hintedIndices.size > 0 && onRetakeHinted && (
+            <button
+              onClick={onRetakeHinted}
+              className={`w-full py-2 px-4 rounded border text-xs font-medium flex items-center justify-center gap-2 transition mb-2 ${
+                isDark 
+                  ? 'bg-[#1e1e1e] hover:bg-[#333333] border-amber-500/50 text-amber-400' 
+                  : 'bg-white hover:bg-amber-50 border-amber-400 text-amber-600'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Retake Hinted Lines ({hintedIndices.size})</span>
             </button>
           )}
 

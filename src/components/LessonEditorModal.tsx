@@ -134,33 +134,22 @@ export const LessonEditorModal: React.FC<LessonEditorModalProps> = ({
 
   const getLLMPromptText = (includeCode: boolean = false): string => {
     const codeSnippet = includeCode && rawText.trim() ? rawText.trim() : '[PASTE YOUR CODE HERE]';
-    return `Please take the following code and annotate it line-by-line for interactive study and practice in LineCode Tutor.
+    return `Please take the following code and format it for interactive study and practice in LineCode Tutor.
 
 INSTRUCTIONS:
 1. Output every single line of code exactly as written, preserving original indentation.
-2. Immediately following each line of code, add a comment line explaining what that specific line does, why it is written that way, and key logic/invariants.
-3. Use the standard comment syntax for the language:
-   - For Python / Bash / Ruby: use # (indented under the line)
-   - For JavaScript / TypeScript / C / C++ / Java / Rust / Go / C#: use // (indented under the line)
-   - For SQL / Lua: use -- (indented under the line)
-4. Do not skip lines or combine multiple lines. Every single code line must have its explanation comment immediately after it.
-5. Output ONLY the commented code block without extra markdown intro/outro conversational text so I can copy-paste it directly into LineCode Tutor.
+2. Do NOT add any explanations, analysis, or comments to the code.
+3. Strip any existing comments if present.
+4. Output ONLY the raw code block without extra markdown intro/outro conversational text so I can copy-paste it directly into LineCode Tutor.
 
 EXAMPLE OUTPUT FORMAT:
 def binary_search(arr, target):
-    # Define binary search function taking a sorted array and target value
     left = 0
-    # Initialize left search boundary pointer at index 0
     right = len(arr) - 1
-    # Initialize right search boundary pointer at the last array index
     while left <= right:
-        # Loop while the search window is valid (left pointer <= right pointer)
         mid = (left + right) // 2
-        # Compute the midpoint index using integer floor division
         if arr[mid] == target:
-            # Check if the middle element matches target
             return mid
-            # Target found, return the index
 
 --- CODE TO ANNOTATE ---
 ${codeSnippet}`;

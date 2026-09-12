@@ -21,6 +21,8 @@ interface IDLEEditorPanelProps {
   completedIndices: Set<number>;
   onJumpToLine: (index: number) => void;
   settings: AppSettings;
+  drillLineIndices?: Set<number> | null;
+  onToggleLineSelection?: (index: number) => void;
 }
 
 export const IDLEEditorPanel: React.FC<IDLEEditorPanelProps> = ({
@@ -29,6 +31,8 @@ export const IDLEEditorPanel: React.FC<IDLEEditorPanelProps> = ({
   completedIndices,
   onJumpToLine,
   settings,
+  drillLineIndices,
+  onToggleLineSelection,
 }) => {
   const [copied, setCopied] = React.useState(false);
   const activeLineRef = useRef<HTMLDivElement>(null);
@@ -82,6 +86,16 @@ export const IDLEEditorPanel: React.FC<IDLEEditorPanelProps> = ({
           {getLanguageIcon(lesson.language, 'w-3.5 h-3.5')}
           <span className="font-bold text-slate-900 dark:text-slate-100">{fileName}</span>
           <span className="text-[11px] opacity-60">(Script Editor)</span>
+          
+          <label className="flex items-center gap-1.5 ml-2 cursor-pointer hover:opacity-80 transition-opacity">
+            <input
+              type="checkbox"
+              checked={drillLineIndices == null || drillLineIndices.size === lesson.lines.length}
+              onChange={() => onToggleLineSelection?.(-1)}
+              className="w-3 h-3 cursor-pointer"
+            />
+            <span className="text-[10px] opacity-70">All</span>
+          </label>
         </div>
 
         <button
@@ -106,24 +120,49 @@ export const IDLEEditorPanel: React.FC<IDLEEditorPanelProps> = ({
         {lesson.lines.map((line, index) => {
           const isActive = index === currentIndex;
           const isCompleted = completedIndices.has(index);
+          const isIncluded = drillLineIndices ? drillLineIndices.has(index) : true;
 
           return (
             <div
               key={line.id}
               ref={isActive ? activeLineRef : null}
-              onClick={() => onJumpToLine(index)}
-              className={`flex items-stretch rounded-sm my-0.5 cursor-pointer transition-all group ${
+              onClick={() => {
+                if (isIncluded) {
+                  onJumpToLine(index);
+                }
+              }}
+              className={`flex items-stretch rounded-sm my-0.5 transition-all group ${
+                isIncluded ? 'cursor-pointer' : 'cursor-not-allowed opacity-40 grayscale'
+              } ${
                 isActive
                   ? isDark 
                     ? 'bg-[#282828] border-l-2 border-blue-500' 
                     : 'bg-[#eef4fb] border-l-2 border-blue-600'
-                  : isCompleted
+                  : isCompleted && isIncluded
                   ? isDark ? 'hover:bg-[#252526]' : 'hover:bg-[#f6f8fa]'
-                  : 'opacity-50 hover:opacity-80'
+                  : isIncluded
+                  ? 'opacity-80 hover:opacity-100'
+                  : ''
               }`}
             >
-              {/* Line Gutter */}
-              <div className={`w-9 text-right pr-3 py-0.5 select-none font-mono text-xs flex items-center justify-end shrink-0 ${
+              {/* Line Gutter with Checkbox */}
+              <div className="flex items-center pl-1 pr-1 w-6 shrink-0 border-r border-transparent">
+                <input
+                  type="checkbox"
+                  checked={isIncluded}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    if (onToggleLineSelection) {
+                      onToggleLineSelection(index);
+                    }
+                  }}
+                  title="Include in drill"
+                  className="w-3 h-3 cursor-pointer opacity-40 group-hover:opacity-100"
+                />
+              </div>
+
+              {/* Line Number */}
+              <div className={`w-8 text-right pr-2 py-0.5 select-none font-mono text-xs flex items-center justify-end shrink-0 ${
                 isActive 
                   ? 'text-blue-600 dark:text-blue-400 font-bold' 
                   : isCompleted 

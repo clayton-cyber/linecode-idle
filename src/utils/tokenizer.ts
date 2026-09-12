@@ -80,7 +80,7 @@ export function tokenizeCodeLine(line: string, language: string = 'python'): { l
   // 6. Single punctuation / operators
   // 7. Whitespace
   const tokenRegex = new RegExp(
-    `(["'\`].*?["'\`])|(${commentPattern})|(\\b\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b)|(===|!==|==|!=|<=|>=|=>|->|\\+=|-=|\\*=|\\/=|\\/\\/|\\*\\*|%=|&&|\\|\\||\\?\\?|\\+\\+|--|:=)|([a-zA-Z_$][a-zA-Z0-9_$]*)|([^\\s\\w"'\`]+)|(\\s+)`,
+    `(["'\`].*?["'\`])|(${commentPattern})|(\\b\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b)|(===|!==|==|!=|<=|>=|=>|->|\\+=|-=|\\*=|\\/=|\\/\\/|\\*\\*|%=|&&|\\|\\||\\?\\?|\\+\\+|--|:=)|([a-zA-Z_$][a-zA-Z0-9_$]*)|([^\\s\\w"'\`])|(\\s+)`,
     'g'
   );
 

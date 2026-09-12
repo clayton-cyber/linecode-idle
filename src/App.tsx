@@ -27,6 +27,8 @@ export function App() {
   // Line navigation and stats state
   const [currentIndex, setCurrentIndex] = useState(0);
   const [completedIndices, setCompletedIndices] = useState<Set<number>>(new Set());
+  const [drillLineIndices, setDrillLineIndices] = useState<Set<number> | null>(null);
+  const [hintedIndices, setHintedIndices] = useState<Set<number>>(new Set());
   const [stats, setStats] = useState<UserStats>({
     completedLines: 0,
     totalAttempts: 0,
@@ -67,12 +69,30 @@ export function App() {
     setCurrentLesson(lesson);
     setCurrentIndex(0);
     setCompletedIndices(new Set());
+    setDrillLineIndices(null);
+    setHintedIndices(new Set());
     setStats({
       completedLines: 0,
       totalAttempts: 0,
       revealedSolutions: 0,
       streak: 0,
       startTime: Date.now(),
+    });
+  };
+
+  const handleToggleLineSelection = (index: number) => {
+    setDrillLineIndices(prev => {
+      if (index === -1) {
+        if (prev === null || prev.size === currentLesson.lines.length) return new Set();
+        return null; // null means all lines are active
+      }
+      const activeLines = prev ? new Set(prev) : new Set(currentLesson.lines.map((_, i) => i));
+      if (activeLines.has(index)) {
+        activeLines.delete(index);
+      } else {
+        activeLines.add(index);
+      }
+      return activeLines;
     });
   };
 
@@ -144,6 +164,11 @@ export function App() {
             onJumpToLine={setCurrentIndex}
             completedIndices={completedIndices}
             setCompletedIndices={setCompletedIndices}
+            drillLineIndices={drillLineIndices}
+            hintedIndices={hintedIndices}
+            setHintedIndices={setHintedIndices}
+            onToggleLineSelection={handleToggleLineSelection}
+            onSetDrillLineIndices={setDrillLineIndices}
             viewMode={viewMode}
             onToggleViewMode={() => setViewMode(viewMode === 'split' ? 'focus' : 'split')}
           />
@@ -157,6 +182,11 @@ export function App() {
             onJumpToLine={setCurrentIndex}
             completedIndices={completedIndices}
             setCompletedIndices={setCompletedIndices}
+            drillLineIndices={drillLineIndices}
+            hintedIndices={hintedIndices}
+            setHintedIndices={setHintedIndices}
+            onToggleLineSelection={handleToggleLineSelection}
+            onSetDrillLineIndices={setDrillLineIndices}
             stats={stats}
             setStats={setStats}
             viewMode={viewMode}

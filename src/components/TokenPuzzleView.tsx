@@ -29,6 +29,11 @@ interface TokenPuzzleViewProps {
   onJumpToLine: (index: number) => void;
   completedIndices: Set<number>;
   setCompletedIndices: React.Dispatch<React.SetStateAction<Set<number>>>;
+  drillLineIndices: Set<number> | null;
+  hintedIndices: Set<number>;
+  setHintedIndices: React.Dispatch<React.SetStateAction<Set<number>>>;
+  onToggleLineSelection: (index: number) => void;
+  onSetDrillLineIndices: (indices: Set<number> | null) => void;
   viewMode: 'split' | 'focus';
   onToggleViewMode: () => void;
 }
@@ -41,6 +46,11 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
   onJumpToLine,
   completedIndices,
   setCompletedIndices,
+  drillLineIndices,
+  hintedIndices,
+  setHintedIndices,
+  onToggleLineSelection,
+  onSetDrillLineIndices,
   viewMode,
 }) => {
   const isDark = settings.theme === 'dark';
@@ -48,7 +58,7 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
   const currentLine = lesson.lines[currentIndex] || lesson.lines[0];
 
   // Game configuration state
-  const [difficulty, setDifficulty] = useState<PuzzleDifficulty>('medium');
+  const [difficulty, setDifficulty] = useState<PuzzleDifficulty>('hard');
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
 
   // Scoring & Game stats state
@@ -187,8 +197,14 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
 
       // Auto advance after brief delay
       setTimeout(() => {
-        if (currentIndex < totalLines - 1) {
-          onJumpToLine(currentIndex + 1);
+        let nextIdx = currentIndex + 1;
+        if (drillLineIndices) {
+          while (nextIdx < totalLines && !drillLineIndices.has(nextIdx)) {
+            nextIdx++;
+          }
+        }
+        if (nextIdx < totalLines) {
+          onJumpToLine(nextIdx);
         } else {
           setPuzzleStats(prev => ({ ...prev, endTime: Date.now() }));
           setIsCompletionModalOpen(true);
@@ -250,10 +266,27 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
       const correct = expectedSlots[i];
       if (!placed || placed.text !== correct.text) {
         // Find corresponding bank token
-        const bankToken = puzzleData.bankTokens.find(bt => bt.text === correct.text && bt.id !== placed?.id);
+        // First try to find one that isn't placed anywhere
+        const unplacedTokens = puzzleData.bankTokens.filter(bt => !Object.values(placedTokens).some(pt => pt?.id === bt.id));
+        let bankToken = unplacedTokens.find(bt => bt.text === correct.text);
+        
+        if (!bankToken) {
+          // If all matching tokens are placed, find one that is placed in the wrong slot
+          const wrongPlacedTokens = Object.entries(placedTokens)
+            .filter(([sIdx, pt]) => pt && expectedSlots[parseInt(sIdx, 10)]?.text !== pt.text)
+            .map(([_, pt]) => pt as TokenItem);
+          bankToken = wrongPlacedTokens.find(bt => bt.text === correct.text);
+        }
+
+        if (!bankToken) {
+          // Fallback to any token that isn't the one currently placed here
+          bankToken = puzzleData.bankTokens.find(bt => bt.text === correct.text && bt.id !== placed?.id);
+        }
+
         if (bankToken) {
           placeTokenInSlot(i, bankToken);
           setHintSlot(i);
+          setHintedIndices(prev => new Set(prev).add(currentIndex));
           setPuzzleStats(prev => ({
             ...prev,
             hintsUsed: prev.hintsUsed + 1,
@@ -272,6 +305,28 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
     }
     setPlacedTokens({});
     setHintSlot(null);
+  };
+
+  // Restart the entire drill from scratch
+  const handleRestartDrill = () => {
+    let firstIdx = 0;
+    if (drillLineIndices) {
+      while (firstIdx < totalLines && !drillLineIndices.has(firstIdx)) firstIdx++;
+    }
+    if (firstIdx >= totalLines) firstIdx = 0;
+    onJumpToLine(firstIdx);
+    setCompletedIndices(new Set());
+    setHintedIndices(new Set());
+    setPuzzleStats({
+      completedLines: 0,
+      totalAttempts: 0,
+      revealedSolutions: 0,
+      streak: 0,
+      startTime: Date.now(),
+      score: 0,
+      comboMultiplier: 1,
+      hintsUsed: 0,
+    });
   };
 
   // Keyboard shortcut listener (1-9 to select bank token, Backspace to remove, Enter to advance/check)
@@ -361,22 +416,6 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
         {/* Left Column: Puzzle Board */}
         <div className={`${viewMode === 'split' ? 'lg:col-span-7' : 'w-full'} space-y-4`}>
           
-          {/* Step Docstring Analysis */}
-          <IDLEAnalysisDoc
-            currentLine={currentLine}
-            currentIndex={currentIndex}
-            totalLines={totalLines}
-            onPrev={() => currentIndex > 0 && onJumpToLine(currentIndex - 1)}
-            onNext={() => currentIndex < totalLines - 1 && onJumpToLine(currentIndex + 1)}
-            onReset={() => {
-              onJumpToLine(0);
-              setCompletedIndices(new Set());
-              setPuzzleStats(prev => ({ ...prev, score: 0, streak: 0, comboMultiplier: 1 }));
-            }}
-            isCompleted={completedIndices.has(currentIndex)}
-            settings={settings}
-          />
-
           {/* Core Interactive Token Drop Board */}
           <div 
             className={`p-4 sm:p-5 rounded-xl border transition shadow-sm ${
@@ -396,22 +435,6 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
                 <span className="opacity-70 font-sans text-xs">
                   Fill in <strong className="text-purple-600 dark:text-purple-400">{puzzleData.blankSlotsCount}</strong> missing token{puzzleData.blankSlotsCount !== 1 ? 's' : ''}
                 </span>
-              </div>
-
-              {/* Difficulty selector */}
-              <div className="flex items-center gap-1.5">
-                <select
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value as PuzzleDifficulty)}
-                  className={`text-[11px] font-mono px-2.5 py-1 rounded-lg border transition font-medium ${
-                    isDark ? 'bg-[#252526] border-[#3c3c3c] text-[#cccccc]' : 'bg-[#f6f8fa] border-[#d0d7de] text-[#24292f]'
-                  }`}
-                  title="Puzzle blanking difficulty"
-                >
-                  <option value="easy">🟢 Easy (Inbuilt Tokens Present)</option>
-                  <option value="medium">🟡 Medium (Balanced Challenge)</option>
-                  <option value="hard">🔴 Hard (100% All Tokens Missing)</option>
-                </select>
               </div>
             </div>
 
@@ -591,8 +614,19 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
                   onClick={() => {
                     // Skip / Reveal current line
                     setCompletedIndices(prev => new Set(prev).add(currentIndex));
-                    if (currentIndex < totalLines - 1) {
-                      onJumpToLine(currentIndex + 1);
+                    setHintedIndices(prev => new Set(prev).add(currentIndex));
+                    let nextIdx = currentIndex + 1;
+                    if (drillLineIndices) {
+                      while (nextIdx < totalLines && !drillLineIndices.has(nextIdx)) {
+                        nextIdx++;
+                      }
+                    }
+                    if (nextIdx < totalLines) {
+                      onJumpToLine(nextIdx);
+                    } else {
+                      setPuzzleStats(prev => ({ ...prev, endTime: Date.now() }));
+                      setIsCompletionModalOpen(true);
+                      if (settings.soundEffects) sounds.playVictory();
                     }
                   }}
                   className={`px-3 py-1.5 rounded-lg border text-xs font-medium flex items-center gap-1 transition ${
@@ -616,20 +650,35 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
             }}
           >
             <div className="text-[11px] font-mono font-bold uppercase tracking-wider opacity-70 mb-2 flex items-center justify-between">
-              <span>Puzzle Progress</span>
-              <span>{completedIndices.size}/{totalLines} lines completed</span>
+              <span>Puzzle Progress — {completedIndices.size}/{totalLines} lines</span>
+              <button
+                onClick={handleRestartDrill}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] font-semibold transition ${
+                  isDark
+                    ? 'border-[#3c3c3c] hover:bg-[#333333] text-[#858585] hover:text-white'
+                    : 'border-[#d0d7de] hover:bg-[#f0f0f0] text-[#57606a]'
+                }`}
+                title="Restart the drill from the beginning"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Restart Drill
+              </button>
             </div>
             <div className="flex flex-wrap gap-1.5 font-mono">
               {lesson.lines.map((l, idx) => {
                 const isActive = idx === currentIndex;
                 const isDone = completedIndices.has(idx);
+                const isHinted = hintedIndices.has(idx);
+                const isSkipped = drillLineIndices && !drillLineIndices.has(idx);
 
                 return (
                   <button
                     key={l.id}
                     onClick={() => onJumpToLine(idx)}
                     className={`w-7 h-7 rounded text-xs font-bold flex items-center justify-center transition border ${
-                      isActive
+                      isSkipped
+                        ? 'opacity-30 bg-transparent border-dashed border-gray-400 text-gray-500 cursor-not-allowed'
+                        : isActive
                         ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
                         : isDone
                         ? isDark 
@@ -639,7 +688,8 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
                         ? 'bg-[#1e1e1e] hover:bg-[#333333] text-[#858585] border-[#3c3c3c]'
                         : 'bg-[#f6f8fa] hover:bg-[#eef2f6] text-[#57606a] border-[#d0d7de]'
                     }`}
-                    title={`Line ${l.lineNumber}: ${l.code.trim()}`}
+                    title={isSkipped ? `Line ${l.lineNumber} (Skipped)` : `Line ${l.lineNumber}: ${l.code.trim()}`}
+                    disabled={isSkipped || false}
                   >
                     {l.lineNumber}
                   </button>
@@ -659,6 +709,8 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
               completedIndices={completedIndices}
               onJumpToLine={onJumpToLine}
               settings={settings}
+              drillLineIndices={drillLineIndices}
+              onToggleLineSelection={onToggleLineSelection}
             />
           </div>
         )}
@@ -671,8 +723,15 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
         lesson={lesson}
         stats={puzzleStats}
         onRestart={() => {
-          onJumpToLine(0);
+          let firstIdx = 0;
+          if (drillLineIndices) {
+            while (firstIdx < totalLines && !drillLineIndices.has(firstIdx)) firstIdx++;
+          }
+          if (firstIdx >= totalLines) firstIdx = 0;
+
+          onJumpToLine(firstIdx);
           setCompletedIndices(new Set());
+          setHintedIndices(new Set());
           setPuzzleStats({
             completedLines: 0,
             totalAttempts: 0,
@@ -689,6 +748,24 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
         onClose={() => setIsCompletionModalOpen(false)}
         soundEnabled={settings.soundEffects}
         settings={settings}
+        hintedIndices={hintedIndices}
+        onRetakeHinted={() => {
+          onSetDrillLineIndices(new Set(hintedIndices));
+          onJumpToLine(Array.from(hintedIndices).sort((a,b)=>a-b)[0] || 0);
+          setCompletedIndices(new Set());
+          setHintedIndices(new Set());
+          setPuzzleStats({
+            completedLines: 0,
+            totalAttempts: 0,
+            revealedSolutions: 0,
+            streak: 0,
+            startTime: Date.now(),
+            score: 0,
+            comboMultiplier: 1,
+            hintsUsed: 0,
+          });
+          setIsCompletionModalOpen(false);
+        }}
       />
 
     </div>
