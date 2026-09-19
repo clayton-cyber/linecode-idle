@@ -95,7 +95,6 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({
               color: isDark ? '#ffffff' : '#111111',
             }}
           >
-            {getLanguageIcon(lesson.language, 'w-3.5 h-3.5')}
             <span className="truncate max-w-[180px]">{fileName}</span>
             <span className="p-0.5 hover:bg-black/10 dark:hover:bg-white/10 rounded">
               <X className="w-3 h-3 opacity-60" />

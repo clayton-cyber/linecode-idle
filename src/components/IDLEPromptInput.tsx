@@ -4,12 +4,10 @@ import {
   Eye, 
   EyeOff, 
   ArrowRight, 
-  CornerDownLeft, 
-  Sparkles, 
+  CornerDownLeft,
   AlertCircle,
   Copy,
-  Check,
-  Terminal
+  Check
 } from 'lucide-react';
 import { CodeLineItem, AppSettings } from '../types/lesson';
 import { validateCodeLine, getLeadingIndentation } from '../utils/parser';
@@ -167,7 +165,6 @@ export const IDLEPromptInput: React.FC<IDLEPromptInputProps> = ({
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition shadow-xs"
               title="Insert solution line"
             >
-              <Sparkles className="w-3.5 h-3.5" />
               <span>Fill</span>
             </button>
           )}

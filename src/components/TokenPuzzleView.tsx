@@ -359,7 +359,7 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
   }, [availableBankTokens, handleBankTokenClick, puzzleData.blankSlotsCount, placedTokens, removeTokenFromSlot]);
 
   return (
-    <div className="h-full p-4 lg:p-6 overflow-y-auto space-y-4 max-w-7xl mx-auto">
+    <div className="h-full p-4 lg:p-6 overflow-y-auto space-y-4">
       
       {/* 1. Header Bar: Game Mode Banner & Quick Stats */}
       <div 
@@ -370,9 +370,6 @@ export const TokenPuzzleView: React.FC<TokenPuzzleViewProps> = ({
         }}
       >
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-purple-600/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400">
-            <Puzzle className="w-4 h-4" />
-          </div>
           <div>
             <div className="flex items-center gap-1.5 font-bold">
               <span className="text-purple-600 dark:text-purple-400">Token Drop Challenge</span>

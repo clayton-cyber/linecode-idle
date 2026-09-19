@@ -30,7 +30,7 @@ export interface UserStats {
 
 export type GameMode = 'type' | 'tokens';
 
-export type TokenType = 
+export type TokenType =
   | 'keyword'
   | 'identifier'
   | 'operator'

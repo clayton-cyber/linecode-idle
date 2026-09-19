@@ -83,7 +83,6 @@ export const IDLEEditorPanel: React.FC<IDLEEditorPanelProps> = ({
         }}
       >
         <div className="flex items-center gap-2">
-          {getLanguageIcon(lesson.language, 'w-3.5 h-3.5')}
           <span className="font-bold text-slate-900 dark:text-slate-100">{fileName}</span>
           <span className="text-[11px] opacity-60">(Script Editor)</span>
           

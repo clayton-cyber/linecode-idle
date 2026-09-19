@@ -132,7 +132,7 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
   };
 
   return (
-    <div className="h-full p-4 lg:p-6 overflow-y-auto space-y-4 max-w-7xl mx-auto">
+    <div className="h-full p-4 lg:p-6 overflow-y-auto space-y-4">
       
       {/* IDLE Shell Startup Banner */}
       <div 
@@ -144,7 +144,6 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
         }}
       >
         <div className="flex items-center gap-2">
-          {getLanguageIcon(lesson.language, 'w-4 h-4')}
           <span>
             <strong className="text-blue-600 dark:text-blue-400">Python 3.13.0 IDLE Shell</strong> —{' '}
             <span className="text-slate-800 dark:text-slate-200 font-semibold">{lesson.title}</span>
@@ -156,7 +155,6 @@ export const PracticeView: React.FC<PracticeViewProps> = ({
             onClick={() => setShowShortcutsHelp(!showShortcutsHelp)}
             className="flex items-center gap-1 hover:underline text-blue-600 dark:text-blue-400"
           >
-            <Keyboard className="w-3.5 h-3.5" />
             <span>Shortcuts</span>
           </button>
         </div>

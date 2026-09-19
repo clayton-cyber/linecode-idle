@@ -1,13 +1,12 @@
 import React from 'react';
 import { 
-  Terminal, 
   Sun, 
   Moon, 
   Zap, 
   CheckCircle2
 } from 'lucide-react';
 import { Lesson, AppSettings, UserStats, GameMode } from '../types/lesson';
-import { Puzzle, Keyboard } from 'lucide-react';
+
 
 interface IDLEStatusBarProps {
   lesson: Lesson;
@@ -45,7 +44,6 @@ export const IDLEStatusBar: React.FC<IDLEStatusBarProps> = ({
       {/* Left status items */}
       <div className="flex items-center gap-3">
         <span className="flex items-center gap-1 font-bold text-blue-600 dark:text-blue-400">
-          <Terminal className="w-3 h-3" />
           <span>Python 3.13 IDLE</span>
         </span>
 
@@ -56,12 +54,10 @@ export const IDLEStatusBar: React.FC<IDLEStatusBarProps> = ({
         <span className="flex items-center gap-1 font-semibold">
           {gameMode === 'tokens' ? (
             <span className="flex items-center gap-1 text-purple-600 dark:text-purple-400">
-              <Puzzle className="w-3 h-3" />
               <span>Token Drop Mode</span>
             </span>
           ) : (
             <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-              <Keyboard className="w-3 h-3" />
               <span>Type Drill Mode</span>
             </span>
           )}

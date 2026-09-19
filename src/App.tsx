@@ -6,12 +6,12 @@ import { TokenPuzzleView } from './components/TokenPuzzleView';
 import { LessonEditorModal } from './components/LessonEditorModal';
 import { defaultLessons } from './data/defaultLessons';
 import { Lesson, AppSettings, UserStats, GameMode } from './types/lesson';
-import { 
-  loadSettings, 
-  saveSettings, 
-  loadCustomLessons, 
-  saveCustomLesson, 
-  deleteCustomLesson 
+import {
+  loadSettings,
+  saveSettings,
+  loadCustomLessons,
+  saveCustomLesson,
+  deleteCustomLesson
 } from './utils/storage';
 
 export function App() {
@@ -127,7 +127,7 @@ export function App() {
   const isDark = settings.theme === 'dark';
 
   return (
-    <div 
+    <div
       className="flex flex-col h-screen overflow-hidden font-sans transition-colors"
       style={{
         backgroundColor: isDark ? '#1e1e1e' : '#f7f9fb',
